@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Inter, Geist, SF Pro, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      background: #FFFFFF;
+      color: #111111;
+      width: 420px;
+      min-height: 200px;
+      max-height: 680px;
+      overflow-y: auto;
+    }
+
+    .header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      background: #FFFFFF;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 32px; height: 32px; border-radius: 10px; background: #111111; display: flex; align-items: center; justify-content: center; }
+    .logo img { width: 18px; height: 18px; display: block; }
+    .header-copy { line-height: 1.2; }
+    .header-title { font-size: 15px; font-weight: 700; color: #111111; }
+    .header-tagline { font-size: 11px; color: #6B7280; margin-top: 3px; font-weight: 400; }
+    .header-sub { font-size: 10px; color: #9CA3AF; margin-top: 4px; }
+    .server-dot { width: 8px; height: 8px; border-radius: 50%; background: #9CA3AF; transition: background 0.2s ease; }
+    .server-dot.online { background: #22C55E; }
+    .server-dot.standby { background: #9CA3AF; }
+    .server-label { font-size: 11px; color: #6B7280; line-height: 1.2; }
+
+    .job-bar {
+      padding: 10px 16px;
+      background: #f4f4f5;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .job-info { flex: 1; min-width: 0; }
+    .job-title { font-size: 12px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .job-company { font-size: 11px; color: #666; }
+    .badge { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-amber { background: #fef9c3; color: #854d0e; }
+    .badge-red { background: #fee2e2; color: #b91c1c; }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-gray { background: #f4f4f5; color: #52525b; border: 1px solid #e4e4e7; }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e8e8e8;
+      background: #fafafa;
+    }
+    .tab {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #888;
+      border-bottom: 2px solid transparent;
+      transition: all 0.1s;
+    }
+    .tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; background: white; }
+    .tab:hover:not(.active) { color: #444; }
+
+    .panel { display: none; padding: 14px 16px; }
+    .panel.active { display: block; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #d4d4d8;
+      border-radius: 7px;
+      cursor: pointer;
+      background: white;
+      color: #1a1a1a;
+      transition: all 0.1s;
+      text-align: center;
+    }
+    .btn:hover { background: #f4f4f5; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn.primary { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+    .btn.primary:hover { background: #333; }
+    .btn.full { width: 100%; justify-content: center; }
+    .btn.sm { padding: 4px 10px; font-size: 11px; }
+
+    .field { margin-bottom: 10px; }
+    label { font-size: 11px; color: #666; display: block; margin-bottom: 4px; font-weight: 500; }
+    input[type=text], select, textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 12px;
+      color: #1a1a1a;
+      border: 1px solid #d4d4d8;
+      border-radius: 7px;
+      padding: 7px 9px;
+      background: white;
+      resize: vertical;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #1a1a1a; }
+    .info-box { background: #f8f8f8; border: 1px solid #e5e7eb; border-radius: 7px; padding: 10px; font-size: 11px; color: #6b7280; margin-top: 10px; line-height: 1.4; }
+    .autofill-status { font-size: 12px; min-height: 20px; margin-top: 10px; }
+    .autofill-detail { margin-top: 10px; font-size: 11px; line-height: 1.4; }
+    .autofill-detail .filled { color: #15803d; margin-bottom: 6px; }
+    .autofill-detail .skipped { color: #b45309; margin-bottom: 6px; }
+
+    .result {
+      margin-top: 12px;
+      background: #f8f8f8;
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.65;
+      color: #1a1a1a;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+    .result-label { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.03em; }
+
+    .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin: 10px 0; }
+    .score-card { background: #f4f4f5; border-radius: 8px; padding: 8px 6px; text-align: center; }
+    .score-num { font-size: 18px; font-weight: 600; }
+    .score-lbl { font-size: 10px; color: #888; margin-top: 1px; }
+
+    .strengths-gaps { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+    .sg-box { background: #f8f8f8; border-radius: 7px; padding: 8px; }
+    .sg-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 5px; }
+    .sg-item { font-size: 11px; color: #444; padding: 2px 0; line-height: 1.4; }
+    .sg-item::before { margin-right: 4px; }
+    .green-title { color: #15803d; }
+    .amber-title { color: #854d0e; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+    .chip { font-size: 10px; padding: 2px 7px; background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 99px; color: #555; }
+
+    .summary-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-size: 12px;
+      color: #0c4a6e;
+      line-height: 1.5;
+      margin: 8px 0;
+    }
+
+    .thinking { color: #888; font-style: italic; animation: pulse 1.5s infinite; font-size: 12px; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+    .row { display: flex; gap: 7px; }
+    .row .field { flex: 1; }
+
+    .actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+
+    .tracker-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 12px;
+    }
+    .tracker-empty { color: #888; font-size: 12px; text-align: center; padding: 20px 0; }
+    .status-select { font-size: 11px; padding: 2px 5px; border-radius: 5px; border: 1px solid #d4d4d8; }
+
+    .extract-bar {
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: white;
+    }
+    .error-msg { color: #b91c1c; font-size: 11px; background: #fee2e2; padding: 7px 10px; border-radius: 6px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo"><img src="../icons/logo.svg" alt="APEX logo"></div>
+    <div class="header-copy">
+      <div class="header-title">APEX — Application Preparation & Execution</div>
+      <div class="header-tagline">AI Career Intelligence — by & for Avichal Sharma</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="server-dot" id="server-dot"></div>
+    <span class="server-label" id="server-label">Activating APEX</span>
+  </div>
+</div>
+
+<!-- Job detection bar -->
+<div class="extract-bar">
+  <button class="btn primary" id="extract-btn" style="white-space:nowrap">⚡ Read this page</button>
+  <div id="extract-status" style="font-size:11px;color:#888;">Open a job posting and click to extract</div>
+</div>
+
+<div id="job-bar" class="job-bar" style="display:none">
+  <div class="job-info">
+    <div class="job-title" id="detected-title">—</div>
+    <div class="job-company" id="detected-company">—</div>
+  </div>
+  <span class="badge badge-gray" id="variant-badge"></span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="analyze">Analyze</button>
+  <button class="tab" data-tab="resume">Resume</button>
+  <button class="tab" data-tab="cover">Cover Letter</button>
+  <button class="tab" data-tab="network">Network</button>
+  <button class="tab" data-tab="autofill">Autofill</button>
+  <button class="tab" data-tab="tracker">Tracker</button>
+</div>
+
+<!-- ANALYZE -->
+<div class="panel active" id="panel-analyze">
+  <div class="field">
+    <label>Job description (auto-filled from page, or paste manually)</label>
+    <textarea id="jd-text" rows="4" placeholder="Click 'Read this page' above, or paste job description here..."></textarea>
+  </div>
+  <div class="row">
+    <div class="field"><label>Company</label><input type="text" id="jd-company" placeholder="Auto-detected"></div>
+    <div class="field"><label>Role title</label><input type="text" id="jd-title-input" placeholder="Auto-detected"></div>
+  </div>
+  <button class="btn primary full" id="analyze-btn">Analyze & Score ↗</button>
+  <div id="analyze-result"></div>
+</div>
+
+<!-- RESUME -->
+<div class="panel" id="panel-resume">
+  <div class="field">
+    <label>Resume variant</label>
+    <select id="resume-variant">
+      <option value="auto">Auto-select (recommended)</option>
+      <option value="AI PM">AI Product Management</option>
+      <option value="PM">Product Management</option>
+      <option value="Technical PM">Technical Product Management</option>
+      <option value="Consulting">Consulting</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Extra emphasis (optional)</label>
+    <input type="text" id="resume-focus" placeholder="e.g. emphasize AI evaluation experience">
+  </div>
+  <button class="btn primary full" id="resume-btn">Generate Resume Bullets ↗</button>
+  <div id="resume-result"></div>
+</div>
+
+<!-- COVER LETTER -->
+<div class="panel" id="panel-cover">
+  <div class="field">
+    <label>Specific hook or angle (optional)</label>
+    <input type="text" id="cover-angle" placeholder="e.g. reference their AI roadmap announcement">
+  </div>
+  <button class="btn primary full" id="cover-btn">Generate Cover Letter ↗</button>
+  <div id="cover-result"></div>
+</div>
+
+<!-- NETWORK -->
+<div class="panel" id="panel-network">
+  <div class="row">
+    <div class="field"><label>Their role / title</label><input type="text" id="net-role" placeholder="e.g. Senior PM"></div>
+    <div class="field"><label>Company</label><input type="text" id="net-company" placeholder="Auto-filled"></div>
+  </div>
+  <div class="field">
+    <label>Context about them (optional)</label>
+    <input type="text" id="net-context" placeholder="e.g. saw their talk on AI product strategy">
+  </div>
+  <div class="field">
+    <label>Your goal</label>
+    <select id="net-goal">
+      <option>Intro call / coffee chat</option>
+      <option>Learn about the role</option>
+      <option>Follow up after applying</option>
+      <option>Referral request (soft)</option>
+    </select>
+  </div>
+  <button class="btn primary full" id="network-btn">Write Outreach Message ↗</button>
+  <div id="network-result"></div>
+</div>
+
+<!-- AUTOFILL -->
+<div class="panel" id="panel-autofill">
+  <div class="field">
+    <label style="font-size:13px;font-weight:600;color:#111111;">Auto-fill Application Form</label>
+    <div style="font-size:11px;color:#888;margin-top:4px;">Navigate to the application page, then click Fill</div>
+  </div>
+  <div class="field">
+    <label>Cover letter (auto-populated from last generated, or paste)</label>
+    <textarea id="autofill-cover" rows="4" placeholder="Your cover letter will auto-populate here..."></textarea>
+  </div>
+  <div class="field">
+    <label>'Why do you want to work here?' answer (optional)</label>
+    <textarea id="autofill-why" rows="3" placeholder="Paste a custom answer, or leave blank to skip..."></textarea>
+  </div>
+  <button class="btn primary full" id="autofill-btn">⚡ Fill Application Fields</button>
+  <div id="autofill-status" class="autofill-status"></div>
+  <div id="autofill-detail" class="autofill-detail"></div>
+  <div class="info-box">
+    Fills: Name · Email · Phone · Address · LinkedIn · GitHub · Tableau · Website · Salary · Work authorization · Relocation · Education · GPA · Gender · Ethnicity · Veteran status · Disability · References · Cover letter
+    <br><strong>Legend:</strong> amber highlight = needs manual input, green = filled by APEX
+  </div>
+</div>
+
+<!-- TRACKER -->
+<div class="panel" id="panel-tracker">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <span style="font-size:12px;color:#666;" id="tracker-count">0 applications</span>
+    <button class="btn sm" id="save-current-btn">+ Save current job</button>
+  </div>
+  <div id="tracker-list"></div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
