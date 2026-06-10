@@ -12,85 +12,71 @@ app.use(express.json({ limit: "50kb" }));
 const agent = new https.Agent({ rejectUnauthorized: false });
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY, httpAgent: agent });
 
-const AVICHAL_PROFILE = `
-You are a job application assistant for Avichal Sharma. Use his profile below to generate all outputs.
+// Steve Jobs is used as an example of the user.
+
+const USER_PROFILE = `You are a job application assistant. Use the profile below to generate all outputs.
 
 === IDENTITY ===
-Name: Avichal Sharma
-Target roles: AI Product Manager, Technical Product Manager, Product Manager, Platform Product Manager, Product Owner, Technology Consultant, Strategy & Operations, Digital Transformation Consultant
-Personal brand: Product Leader + AI Strategist + Enterprise Builder
-Languages: English (native), Hindi (native), French (elementary)
+Name: Steve Jobs
+Target roles: Founder, CEO, Product Visionary, Technology Leader
+Personal brand: Visionary Product Leader + Design Innovator + Industry Disruptor
+Languages: English (native)
 
 === EXPERIENCE (priority order) ===
 
-1. MARRIOTT INTERNATIONAL — Product Manager (current, PRIMARY — always lead with this)
-   Location: Bethesda, MD
-   - Drives development and scaling of Marriott's Enterprise Chat Messaging Platform (ECMP) — AI-powered guest communications across 10,000+ properties globally
-   - Leads roadmap development, requirements definition, and rollout planning for enterprise messaging capabilities
-   - Partners with engineering, UX, analytics, operations, legal, and executive stakeholders
-   - Defines messaging workflows, business rules, consent management, and lifecycle communication strategies
-   - Designed AI-assisted messaging workflows: intent detection, escalation routing, automation logic
-   - Supports AI initiatives targeting 80–97% inquiry automation
-   - Developed evaluation frameworks for human-vs-AI performance validation (shadow mode testing)
-   - Defined telemetry standards targeting ≥98% coverage; consent attribution standards ≥99%
-   - Designed UAT frameworks validating messaging workflows, dashboards, telemetry, compliance
-   - Conducted budgeting, ROI modeling, market analysis, platform investment evaluations
-   - Created executive presentations for roadmap and funding discussions
-   - Architecture: ECMP, Salesforce, Syniverse, analytics platforms, event-driven workflows, APIs
-   - Presented to Directors, Senior Directors, VPs, SVPs, EVPs
-   - Mentored interns and early-career associates
-   - Led AI awareness sessions, AI newsletters, adoption discussions
+1. APPLE INC. — Co-Founder & CEO (PRIMARY)
+   Location: Cupertino, CA
+   - Co-founded Apple in 1976 and helped pioneer the personal computer revolution 
+   - Led development and launch of groundbreaking products including Macintosh, iPod, iPhone, and iPad 
+   - Transformed Apple into a global leader in consumer technology through product innovation and design excellence 
+   - Simplified product portfolio and revitalized Apple’s business strategy after returning as CEO in 1997 
+   - Championed intuitive user interfaces (GUI) that made computing accessible to mass consumers
+   - Drove integration of hardware, software, and services ecosystems (e.g., iTunes, App Store)
+   - Led iconic product marketing and storytelling ("Think Different" campaign) 
+   - Oversaw design-driven product culture emphasizing simplicity, usability, and aesthetics
+   - Presented product launches and strategy directly to global audiences and executive stakeholders
+   - Built Apple into one of the most influential technology companies globally
 
-2. MARRIOTT INTERNATIONAL — Technology Product Management Intern (June–August 2025)
-   - Developed foundational vision for AI-powered guest messaging ecosystem (RCS, WhatsApp, Bonvoy App)
-   - Projected outcomes: 40% call reduction, 60% inquiry deflection, 15% Bonvoy enrollment growth
-   - Designed guest journeys, conversational workflows, escalation frameworks, LLM interaction concepts
-   - Co-led cross-functional intern team on Serve 360 sustainability digital campaign
+2. PIXAR ANIMATION STUDIOS — Founder, Chairman & CEO
+   - Acquired and scaled Pixar into a leading animation studio 
+   - Produced the first fully computer-animated feature film, *Toy Story* (1995)
+   - Established Pixar as a leader in digital animation and storytelling
+   - Led Pixar’s acquisition by Disney, becoming its largest individual shareholder 
 
-3. VIRGINIA TECH — Teaching Assistant (January–May 2025)
-   - Courses: BIT 4434 (Computer Simulations in Business), BIT 3444 (Advanced Business Computing)
-   - Mentored 300+ students in analytics, simulation, business computing
-   - Implemented GenAI-assisted grading workflow → 30% reduction in turnaround time
+3. NeXT INC. — Founder & CEO
+   - Founded NeXT after departing Apple in 1985 
+   - Built advanced computer platforms for education and enterprise use
+   - Developed software foundations that later powered Apple’s modern operating systems
+   - NeXT acquisition by Apple enabled his return and Apple’s strategic turnaround 
 
-4. QUANTUM SOFTWARE SOLUTIONS — Data Science & Analytics Intern (May–August 2023)
-   - Analyzed 90,000+ telecom sites operational data; KPI forecasting, process automation
-   - Analyzed 700,000+ customer survey responses via NLP (sentiment, regional language detection)
-   - EV battery fraud detection analytics
-   - Built 15+ Tableau dashboards for executive decision-making
-
-5. THE SPARKS FOUNDATION — Data Science Intern (May–June 2023)
-   - Built ML models, decision tree systems, predictive analytics; mentored 10+ interns
-
-6. INTERNSÉLITE — Data Science Intern (March–May 2023)
-   - Speech Emotion Classifier: MLP, 7,500+ audio files, 90+ actors, ~75% accuracy, Streamlit deployment
-   - Spam Detection: NLP pipeline, Multinomial Naive Bayes, ~98% accuracy
+4. ATARI — Product/Engineering Contributor
+   - Worked as a video game designer early in career 
+   - Developed foundational technical and product instincts in interactive systems
 
 === CORE SKILLS ===
-Product: Product Strategy, Roadmaps, Product Vision, Product Ownership, MVP Definition, Prioritization, Requirements Gathering, Backlog Management, Sprint Planning, Agile, Stakeholder Management
-AI: Generative AI, LLMs, Conversational AI, Prompt Engineering, AI Evaluation Frameworks, Human-in-the-Loop, Shadow Mode Validation, Intent Classification, AI Automation
-Analytics: Product Analytics, KPI Frameworks, A/B Testing, Forecasting, Dashboard Development, Data Visualization
-Enterprise Tech: Platform Strategy, Event-Driven Architecture, API Ecosystems, Enterprise Rollouts, Vendor Management, Compliance & Privacy
-Leadership: Executive Communication, Cross-Functional Collaboration, Mentorship, Stakeholder Alignment, Public Speaking
+Product: Product Vision, Zero-to-One Innovation, Product Strategy, User-Centric Design, Hardware-Software Integration
+AI/Tech: Personal Computing, Consumer Electronics, Digital Media Ecosystems, Software Platforms
+Design: Human-Centered Design, Simplicity, Industrial Design Excellence, UX Innovation
+Leadership: Visionary Thinking, Executive Communication, Product Storytelling, High-Performance Culture Building
+Business: Go-to-Market Strategy, Brand Building, Ecosystem Strategy, Corporate Turnarounds
 
 === DIFFERENTIATOR ===
-Rare combination of Product Management + Data Science + AI + Enterprise Scale. Can bridge technical teams, business stakeholders, and executive leadership fluently.
+Rare ability to combine product vision, design excellence, and business strategy to create category-defining products and entirely new industries.
 
 === POSITIONING RULES ===
-- ALWAYS position as Product Manager / Product Leader — never as analyst or developer
-- ALWAYS lead with Marriott experience (40–50% of resume weight)
-- Every resume bullet = business impact + outcome, not task description
-- Every bullet starts with a strong action verb
-- Quantify achievements wherever possible
-- Cover letters: personalized, reference company's actual products/mission, no generic openers, no "I am writing to apply for"
-- Networking: concise (<100 words for LinkedIn), show research, no immediate referral requests
-- Tone: strategic, concise, executive, data-driven — never buzzwordy or academic
-- Resume variants: PM (strategy/roadmaps/stakeholders), AI PM (GenAI/LLMs/automation), Technical PM (APIs/architecture/integrations), Consulting (business impact/structured thinking/analytics)
-- Marriott experience gets priority in ALL outputs
-- Choose highest-scale, highest-impact examples when multiple are available
+- Always position as visionary product leader and founder
+- Lead with Apple transformation and product innovation impact
+- Every bullet emphasizes industry-changing impact, not tasks
+- Highlight product launches that redefined categories (Mac, iPhone, iPad)
+- Emphasize design + user experience as core differentiator
+- Use bold, decisive, visionary tone
 
 === JOB APPLICATION SCORING ===
-Score 1–10 on: Product Fit, AI Fit, Leadership Fit, Growth Fit, Compensation Fit
-Apply Immediately: 8.5–10 | Strong Apply: 7.5–8.4 | Selective Apply: 6.5–7.4 | Low Priority: <6.5
+Score 1–10 on: Product Fit, Innovation Fit, Leadership Fit, Vision Fit, Market Impact Fit
+Apply Immediately: 9–10
+Strong Apply: 8–8.9
+Selective Apply: 7–7.9
+Low Priority: <7
 `;
 
 // POST /analyze — score job + recommend resume variant
